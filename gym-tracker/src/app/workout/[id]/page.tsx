@@ -1,8 +1,10 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { MOCK_WORKOUTS } from "@/lib/mock-data";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import type { Workout } from "@/lib/types";
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + "T00:00:00");
@@ -20,8 +22,38 @@ export default function WorkoutDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  // TODO: const workout = await api.workouts.get(id);
-  const workout = MOCK_WORKOUTS.find((w) => w.id === id);
+  const router = useRouter();
+  const [workout, setWorkout] = useState<Workout | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    api.workouts
+      .get(id)
+      .then((res) => setWorkout(res.data))
+      .catch(() => setWorkout(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const handleDelete = async () => {
+    if (!confirm("¿Borrar este entreno?")) return;
+    setDeleting(true);
+    try {
+      await api.workouts.delete(id);
+      router.push("/");
+    } catch {
+      alert("Error borrando entreno");
+      setDeleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-zinc-500">Cargando...</div>
+      </div>
+    );
+  }
 
   if (!workout) {
     return (
@@ -38,22 +70,31 @@ export default function WorkoutDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-400 hover:text-white"
-        >
-          ← Atrás
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold">{formatDate(workout.date)}</h1>
-          <div className="flex gap-3 text-sm text-zinc-400">
-            {workout.duration_minutes && (
-              <span>⏱️ {workout.duration_minutes} min</span>
-            )}
-            <span>🏋️ {totalVolume.toLocaleString()} kg vol.</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="rounded-lg border border-zinc-700 px-3 py-1.5 text-sm text-zinc-400 hover:text-white"
+          >
+            ← Atrás
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold">{formatDate(workout.date)}</h1>
+            <div className="flex gap-3 text-sm text-zinc-400">
+              {workout.duration_minutes && (
+                <span>⏱️ {workout.duration_minutes} min</span>
+              )}
+              <span>🏋️ {totalVolume.toLocaleString()} kg vol.</span>
+            </div>
           </div>
         </div>
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="rounded-lg border border-red-800 px-3 py-1.5 text-sm text-red-400 hover:bg-red-900/30 disabled:opacity-50"
+        >
+          {deleting ? "Borrando..." : "Borrar"}
+        </button>
       </div>
 
       {workout.notes && (

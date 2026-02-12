@@ -1,15 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StatsCards } from "@/components/stats-cards";
 import { WorkoutCard } from "@/components/workout-card";
-import { MOCK_WORKOUTS, MOCK_STATS } from "@/lib/mock-data";
-// import { api } from "@/lib/api"; // TODO: swap mock for real API
+import { api } from "@/lib/api";
+import type { Workout, WorkoutStats } from "@/lib/types";
 
 export default function HomePage() {
-  const [workouts] = useState(MOCK_WORKOUTS);
-  const [stats] = useState(MOCK_STATS);
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [stats, setStats] = useState<WorkoutStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [wRes, sRes] = await Promise.all([
+          api.workouts.list(),
+          api.workouts.stats(),
+        ]);
+        setWorkouts(wRes.data);
+        setStats(sRes.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error cargando datos");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-zinc-500">Cargando entrenos...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-red-400">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -23,7 +59,7 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <StatsCards stats={stats} />
+      {stats && <StatsCards stats={stats} />}
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-zinc-300">

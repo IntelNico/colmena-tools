@@ -3,24 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { WorkoutForm } from "@/components/workout-form";
+import { api } from "@/lib/api";
 import type { CreateWorkoutInput } from "@/lib/types";
-// import { api } from "@/lib/api"; // TODO: connect real API
 import Link from "next/link";
 
 export default function NewWorkoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (data: CreateWorkoutInput) => {
     setLoading(true);
+    setError(null);
     try {
-      // TODO: await api.workouts.create(data);
-      console.log("Create workout:", data);
-      alert("Entreno guardado (mock). Cuando Zape tenga la API, se conecta de verdad.");
+      await api.workouts.create(data);
       router.push("/");
     } catch (err) {
-      console.error(err);
-      alert("Error guardando entreno");
+      setError(err instanceof Error ? err.message : "Error guardando entreno");
     } finally {
       setLoading(false);
     }
@@ -37,6 +36,12 @@ export default function NewWorkoutPage() {
         </Link>
         <h1 className="text-2xl font-bold">Nuevo entreno</h1>
       </div>
+
+      {error && (
+        <div className="rounded-lg bg-red-900/30 border border-red-800 p-3 text-sm text-red-400">
+          {error}
+        </div>
+      )}
 
       <WorkoutForm onSubmit={handleSubmit} loading={loading} />
     </div>

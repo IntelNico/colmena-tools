@@ -10,7 +10,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     { label: "Total entrenos", value: stats.total_workouts, icon: "🏋️" },
     { label: "Esta semana", value: stats.workouts_this_week, icon: "📅" },
-    { label: "Racha actual", value: `${stats.current_streak} días`, icon: "🔥" },
+    { label: "Este mes", value: stats.workouts_this_month, icon: "🗓️" },
     { label: "Duración media", value: stats.avg_duration_minutes ? `${stats.avg_duration_minutes} min` : "—", icon: "⏱️" },
   ];
 

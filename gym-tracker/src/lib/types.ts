@@ -24,10 +24,11 @@ export interface Workout {
 
 export interface WorkoutStats {
   total_workouts: number;
-  workouts_this_week: number;
-  current_streak: number;
+  total_exercises: number;
   avg_duration_minutes: number | null;
-  top_exercises: { name: string; count: number }[];
+  workouts_this_week: number;
+  workouts_this_month: number;
+  most_used_exercises: { name: string; count: number }[];
 }
 
 export interface CreateExerciseInput {

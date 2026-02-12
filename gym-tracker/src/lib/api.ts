@@ -17,25 +17,29 @@ async function fetcher<T>(url: string, init?: RequestInit): Promise<T> {
 export const api = {
   workouts: {
     list: (limit = 20, offset = 0) =>
-      fetcher<Workout[]>(`/workouts?limit=${limit}&offset=${offset}`),
+      fetcher<{ data: Workout[]; total: number }>(
+        `/workouts?limit=${limit}&offset=${offset}`
+      ),
 
-    get: (id: string) => fetcher<Workout>(`/workouts/${id}`),
+    get: (id: string) =>
+      fetcher<{ data: Workout }>(`/workouts/${id}`),
 
     create: (data: CreateWorkoutInput) =>
-      fetcher<Workout>("/workouts", {
+      fetcher<{ data: Workout }>("/workouts", {
         method: "POST",
         body: JSON.stringify(data),
       }),
 
-    update: (id: string, data: Partial<CreateWorkoutInput>) =>
-      fetcher<Workout>(`/workouts/${id}`, {
+    update: (id: string, data: CreateWorkoutInput) =>
+      fetcher<{ data: Workout }>(`/workouts/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
       }),
 
     delete: (id: string) =>
-      fetcher<void>(`/workouts/${id}`, { method: "DELETE" }),
+      fetcher<{ ok: boolean }>(`/workouts/${id}`, { method: "DELETE" }),
 
-    stats: () => fetcher<WorkoutStats>("/workouts/stats"),
+    stats: () =>
+      fetcher<{ data: WorkoutStats }>("/workouts/stats"),
   },
 };
